@@ -1,0 +1,20 @@
+name: monitoring-ci
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: monitoring
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate compose
+        run: docker compose config > /tmp/rk-monitoring-compose.yml
+      - name: Build local images
+        run: docker compose build rk-api monitor-site telegram-bot

@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+.next/
+dist/
+coverage/
+backups/
+*.log
+*.tmp
+.terraform/
+terraform.tfstate*
+
+# Keep the requested local .env in this workspace, but do not commit it.
+.env

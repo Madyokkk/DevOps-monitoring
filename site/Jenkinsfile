@@ -1,0 +1,36 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Install') {
+      steps {
+        sh 'npm ci'
+      }
+    }
+
+    stage('Build') {
+      steps {
+        sh 'npm run build:backend'
+        sh 'npm run build:web'
+      }
+    }
+
+    stage('Docker Compose Check') {
+      steps {
+        sh 'docker compose config > /tmp/rk-compose-check.yml'
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: '/tmp/rk-compose-check.yml', allowEmptyArchive: true
+    }
+  }
+}

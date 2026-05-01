@@ -1,0 +1,59 @@
+---
+- name: Deploy RK production project
+  hosts: rk_servers
+  become: true
+
+  vars:
+    app_dir: /opt/project-root
+
+  tasks:
+    - name: Install packages
+      apt:
+        name:
+          - git
+          - curl
+          - docker.io
+          - docker-compose-plugin
+          - ufw
+          - fail2ban
+          - openssh-server
+        update_cache: true
+
+    - name: Enable Docker
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy project files
+      synchronize:
+        src: "../../"
+        dest: "{{ app_dir }}/"
+        delete: false
+
+    - name: Create env file from example if missing
+      command: cp .env.example .env
+      args:
+        chdir: "{{ app_dir }}"
+        creates: "{{ app_dir }}/.env"
+
+    - name: Install SSH and Fail2Ban hardening
+      command: ./scripts/install_security.sh
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Configure firewall
+      command: ./scripts/setup_firewall.sh
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Start services
+      command: docker compose up -d --build --remove-orphans
+      args:
+        chdir: "{{ app_dir }}"

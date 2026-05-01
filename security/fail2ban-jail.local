@@ -1,0 +1,29 @@
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 5
+backend = systemd
+destemail = root@localhost
+banaction = iptables-multiport
+
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = %(sshd_log)s
+maxretry = 5
+findtime = 10m
+bantime = 1h
+action = %(action_)s
+         rk-telegram[name=sshd, port=ssh, protocol=tcp]
+
+[nginx-http-auth]
+enabled = true
+port = http,https
+filter = nginx-http-auth
+logpath = /var/log/nginx/error.log
+maxretry = 5
+findtime = 10m
+bantime = 1h
+action = %(action_)s
+         rk-telegram[name=nginx-http-auth, port="http,https", protocol=tcp]

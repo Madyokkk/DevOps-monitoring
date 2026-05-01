@@ -1,0 +1,66 @@
+{
+  "name": "rk-assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "rk-assistant",
+        "responseMode": "responseNode",
+        "httpMethod": "POST"
+      },
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 260]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "model": "gpt-4o-mini",
+        "messages": {
+          "messageValues": [
+            {
+              "role": "system",
+              "content": "Сен гүлдер онлайн дүкеніне арналған көмекшісің. Қысқа, нақты жауап бер."
+            },
+            {
+              "role": "user",
+              "content": "={{$json.body.message}}"
+            }
+          ]
+        }
+      },
+      "id": "OpenAI",
+      "name": "OpenAI",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [480, 260],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_API",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"answer\": $json.choices[0].message.content }"
+      },
+      "id": "Respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [700, 260]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "OpenAI", "type": "main", "index": 0 }]]
+    },
+    "OpenAI": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  }
+}

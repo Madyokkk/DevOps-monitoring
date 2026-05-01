@@ -1,0 +1,11 @@
+[
+  { "nameKz": "Қызыл", "slug": "kyzyl", "hex": "#DC2626" },
+  { "nameKz": "Ақ", "slug": "aq", "hex": "#FAFAFA" },
+  { "nameKz": "Қызғылт", "slug": "kyzgylt", "hex": "#EC4899" },
+  { "nameKz": "Сары", "slug": "sary", "hex": "#EAB308" },
+  { "nameKz": "Қоңыр", "slug": "kongyr", "hex": "#A16207" },
+  { "nameKz": "Көк", "slug": "kok", "hex": "#2563EB" },
+  { "nameKz": "Жасыл", "slug": "zhasyl", "hex": "#16A34A" },
+  { "nameKz": "Қызыл қызғылт", "slug": "kyzyl-kyzgylt", "hex": "#D946EF" },
+  { "nameKz": "Аралас", "slug": "aralys", "hex": null }
+]

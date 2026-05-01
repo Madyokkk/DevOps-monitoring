@@ -1,0 +1,29 @@
+{
+  "name": "gulder-online",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Гүлдерді онлайн тапсырыс беру - Қазақстан",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:web\"",
+    "dev:backend": "npm run start:dev --workspace=backend",
+    "dev:web": "npm run dev --workspace=web",
+    "build": "npm run build --workspace=backend && npm run build --workspace=web",
+    "build:backend": "npm run build --workspace=backend",
+    "build:web": "npm run build --workspace=web",
+    "db:migrate": "npm run prisma:migrate --workspace=backend",
+    "db:seed": "npm run db:seed --workspace=backend",
+    "db:generate": "npm run prisma:generate --workspace=backend",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "workspaces": [
+    "apps/backend",
+    "apps/web"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}

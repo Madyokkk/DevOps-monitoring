@@ -1,0 +1,62 @@
+groups:
+  - name: host_resources
+    rules:
+      - alert: HighCPU
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100) > 10
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          description: "CPU usage > 50%"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокое потребление оперативной памяти на узле {{ $labels.instance }}"
+          description: "Использование RAM превышает 80%. Текущее значение: {{ $value | printf `%.1f` }}%."
+
+      - alert: HighDiskUsage
+        expr: |
+          (1 - (
+            node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint!~"/run.*|/var/lib/docker/.+"}
+            /
+            node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs",mountpoint!~"/run.*|/var/lib/docker/.+"}
+          )) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Критически мало свободного места на диске узла {{ $labels.instance }}"
+          description: "Раздел {{ $labels.mountpoint }} заполнен более чем на 90%. Текущее значение: {{ $value | printf `%.1f` }}%."
+
+  - name: service_availability
+    rules:
+      - alert: NodeExporterDown
+        expr: up{job="node-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node Exporter недоступен на узле {{ $labels.instance }}"
+          description: "Prometheus не может получить системные метрики хоста."
+
+      - alert: ApiDown
+        expr: up{job="api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API приложения недоступен"
+          description: "Healthcheck /health не отвечает."
+
+      - alert: PostgresExporterDown
+        expr: up{job="postgres-exporter"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL Exporter недоступен"
+          description: "Prometheus не может получить метрики PostgreSQL."

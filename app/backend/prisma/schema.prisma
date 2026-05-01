@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  MANAGER
+  ADMIN
+}
+
+enum OrderStatus {
+  NEW
+  PAID
+  PREPARING
+  DELIVERING
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  fullName  String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+  role      Role     @default(USER)
+  orders    Order[]
+
+  @@map("users")
+}
+
+model DeliveryCity {
+  id       String   @id @default(cuid())
+  nameKz   String
+  regionKz String?
+  deliveryFee Int   @default(2000) // KZT
+  orders   Order[]
+
+  @@unique([nameKz])
+  @@map("delivery_cities")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  nameKz      String
+  slug        String    @unique
+  description String?
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id       String      @id @default(cuid())
+  nameKz   String      @unique
+  slug     String      @unique
+  products ProductTag[]
+
+  @@map("tags")
+}
+
+model Color {
+  id       String          @id @default(cuid())
+  nameKz   String          @unique
+  slug     String          @unique
+  hex      String?
+  variants ProductVariant[]
+
+  @@map("colors")
+}
+
+model ProductTag {
+  productId String
+  tagId     String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+  @@map("product_tags")
+}
+
+model ProductVariant {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  colorId     String?
+  color       Color?   @relation(fields: [colorId], references: [id], onDelete: SetNull)
+  sizeKz      String?
+  price       Int
+  stock       Int      @default(0)
+  imageUrl    String?
+  sku         String?  @unique
+  orderItems  OrderItem[]
+
+  @@map("product_variants")
+}
+
+model Product {
+  id           String           @id @default(cuid())
+  nameKz       String
+  slug         String           @unique
+  description  String?
+  compositionKz String?
+  imageUrl     String?
+  isActive     Boolean          @default(true)
+  categoryId   String
+  category     Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  variants     ProductVariant[]
+  tags         ProductTag[]
+  orderItems   OrderItem[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@map("products")
+}
+
+
+model Order {
+  id             String      @id @default(cuid())
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  receiverName   String
+  receiverPhone  String
+  cityId         String
+  city           DeliveryCity @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  address        String
+  deliveryTime   DateTime
+  cardMessage    String?
+  paymentMethod  String
+  subtotal       Int
+  deliveryFee    Int
+  totalAmount    Int
+  status         OrderStatus @default(NEW)
+  promoCode      String?
+  adminComment   String?
+  items          OrderItem[]
+  auditLogs      AuditLog[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String          @id @default(cuid())
+  orderId          String
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productVariantId String?
+  productVariant   ProductVariant? @relation(fields: [productVariantId], references: [id], onDelete: SetNull)
+  quantity         Int
+  price            Int
+
+  @@map("order_items")
+}
+
+model PromoCode {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  discountPercent Int?
+  discountFixed   Int?
+  minOrderAmount  Int?
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime?
+
+  @@map("promo_codes")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  adminEmail String   // stored for history even if user deleted
+  action     String
+  entityType String
+  entityId   String?
+  oldValue   Json?
+  newValue   Json?
+  orderId    String?
+  order      Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+}

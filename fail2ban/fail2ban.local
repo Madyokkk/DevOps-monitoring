@@ -1,0 +1,3 @@
+[Definition]
+socket = /home/ubuntu/project-root/run/fail2ban.sock
+logtarget = /var/log/fail2ban.log

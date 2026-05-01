@@ -1,0 +1,53 @@
+---
+- name: Deploy RK project stack
+  hosts: rk_servers
+  become: true
+
+  vars:
+    app_dir: /opt/rk_proekt
+    repo_url: https://github.com/kiraw127/rk_proekt.git
+    repo_branch: main
+
+  tasks:
+    - name: Install system dependencies
+      apt:
+        name:
+          - git
+          - curl
+          - ca-certificates
+          - docker.io
+          - docker-compose-plugin
+          - ufw
+          - fail2ban
+        update_cache: true
+
+    - name: Enable Docker service
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Create app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Clone project repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: "{{ repo_branch }}"
+        update: true
+
+    - name: Copy environment file
+      copy:
+        src: "{{ app_dir }}/.env.example"
+        dest: "{{ app_dir }}/.env"
+        remote_src: true
+        force: false
+
+    - name: Start app services
+      command: docker compose up -d --build
+      args:
+        chdir: "{{ app_dir }}"
