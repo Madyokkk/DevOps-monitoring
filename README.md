@@ -79,7 +79,32 @@ project-root/
 - `terraform/main.tf` - генерация Ansible inventory.
 - `ansible/deploy.yml` - установка Docker/security и запуск compose.
 
-## 4. Запуск
+## 4. Git — клонирование и обновление
+
+Клонировать репозиторий:
+
+```bash
+git clone https://github.com/Madyokkk/DevOps-monitoring.git
+cd DevOps-monitoring
+cp .env.example .env
+nano .env  # заполнить реальные значения
+```
+
+Запушить изменения:
+
+```bash
+git add .
+git commit -m "описание изменений"
+git push origin main
+```
+
+Получить обновления с GitHub:
+
+```bash
+git pull origin main
+```
+
+## 5. Запуск
 
 Проверьте `.env` и замените production-секреты:
 
